@@ -7,8 +7,8 @@ broker = 'broker.emqx.io'
 port = 1883
 topic = "SMTOWN", "YG Entertaiment"
 client_id = ""
-username = 'grup6'
-password = 'public'
+username = 'konser'
+password = 'konser123'
 subs = []
 
 def connect_mqtt(client: mqtt_client):
