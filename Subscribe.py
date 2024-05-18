@@ -28,28 +28,30 @@ def on_message(client, userdata, msg):
         print(f"Received `{msg.payload.decode()}` from `{msg.topic}` topic")
 
 def subscribe_menu(client):
-    #Memilih untuk subscribe/unsubscribe topik
+    # Memilih untuk subscribe/unsubscribe topik
     SM = "SMTOWN"
     YG = "YG Entertaiment"
     print(f"sekarang sedang subscribe {subs}")
     print(f"subscribe/unsubscribe : \n 1 {SM} \n 2 {YG}")
     command = input()
     if command == str(1):
-        #Bagian untuk proses subscribe dan unsubscribe untuk SMTOWN
-        if SM in subs: 
+        # Bagian untuk proses subscribe dan unsubscribe untuk SMTOWN
+        if SM in subs:
             subs.pop(subs.index(SM))
             client.unsubscribe(SM)
         else:
             subs.append(SM)
-            client.subscribe(SM)
+            # Subscribe dengan parameter retain=True
+            client.subscribe(SM, qos=0)
     elif command == str(2):
-        #Bagian untuk proses subscribe dan un subsribe untuk YG Entertainment
+        # Bagian untuk proses subscribe dan un subsribe untuk YG Entertainment
         if YG in subs:
             subs.pop(subs.index(YG))
             client.unsubscribe(YG)
         else:
             subs.append(YG)
-            client.subscribe(YG)
+            # Subscribe dengan parameter retain=True
+            client.subscribe(YG, qos=0)
     print(f"selamat bergabung di {subs}")
     print()
     print()
