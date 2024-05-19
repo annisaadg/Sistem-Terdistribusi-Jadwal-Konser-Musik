@@ -1,19 +1,28 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome to K-Pop Concert Updates: SMTOWN and YG Entertainment</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>MQTT Web Interface</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
     <div class="container">
-        <h1 class="mt-5">Welcome to K-Pop Concert Updates: SMTOWN and YG Entertainment</h1>
-        <div class="mt-5">
-            <h2>Select Role</h2>
-            <a href="{{ url_for('publisher') }}" class="btn btn-primary mt-3">Publisher</a>
-            <a href="{{ url_for('subscriber') }}" class="btn btn-secondary mt-3">Subscriber</a>
+        <h1 class="mt-5">Welcome to the MQTT Web Interface</h1>
+        <div class="list-group mt-4">
+            <a href="/publish/SMTOWN" class="list-group-item list-group-item-action">Publish to SMTOWN</a>
+            <a href="/publish/YG" class="list-group-item list-group-item-action">Publish to YG Entertainment</a>
+            <a href="/subscribe" class="list-group-item list-group-item-action">Subscribe/Unsubscribe</a>
+        </div>
+        <div class="mt-4">
+            <a href="/setup" class="btn btn-primary">Setup Connections</a>
+            <a href="/shutdown" class="btn btn-danger">Shutdown Connections</a>
         </div>
     </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>    
+
 </body>
 </html>
