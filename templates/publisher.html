@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MQTT Publisher</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="mt-5">Publisher to K-Pop Concert Updates</h1>
+        <button class="btn btn-primary mt-3" onclick="initClient()">Connect to K-Pop Concert Channel</button>
+        <a href="{{ url_for('index') }}" class="btn btn-secondary mt-3">Back</a>
+
+        <div class="mt-5">
+            <h2>Publish Message and Schedule</h2>
+            <form id="publish-form">
+                <div class="form-group">
+                    <label for="topic">Topic</label>
+                    <select class="form-control" id="topic" required>
+                        <option value="SMTOWN">SMTOWN</option>
+                        <option value="YG Entertainment">YG Entertainment</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="message">Message</label>
+                    <input type="text" class="form-control" id="message" placeholder="Enter message" required>
+                </div>
+                <div class="form-group">
+                    <label for="schedule">Schedule</label>
+                    <input type="text" class="form-control" id="schedule" placeholder="YYYY/mm/dd - HH:MM" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Publish</button>
+            </form>
+        </div>
+
+        <div class="mt-5">
+            <h2>Published Message and Schedule</h2>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Concert Agency</th>
+                        <th>Message</th>
+                        <th>Schedule</th>
+                    </tr>
+                </thead>
+                <tbody id="published-messages">
+                    <!-- Published messages will be listed here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        function initClient() {
+            $.get("/init", function(data) {
+                if (data.status === "initialized") {
+                    alert("MQTT Client Initialized!");
+                }
+            });
+        }
+
+        $(document).ready(function() {
+            $('#publish-form').on('submit', function(event) {
+                event.preventDefault();
+                const topic = $('#topic').val();
+                const message = $('#message').val();
+                const schedule = $('#schedule').val();
+                $.ajax({
+                    url: '/publish',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ topic, message, schedule }),
+                    success: function(response) {
+                        alert(response.message);
+                        // Update published messages list
+                        $('#published-messages').append(`
+                            <tr>
+                                <td>${topic}</td>
+                                <td>${message}</td>
+                                <td>${schedule}</td>
+                            </tr>
+                        `);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

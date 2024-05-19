@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MQTT Subscriber</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        #messages {
+            max-height: 300px; /* Set maximum height */
+            overflow-y: auto; /* Enable vertical scrollbar */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mt-5">Subscriber to K-Pop Concert Updates</h1>
+        <button class="btn btn-primary mt-3" onclick="initClient()">Connect to K-Pop Concert Channel</button>
+        <a href="{{ url_for('index') }}" class="btn btn-secondary mt-3">Back</a>
+
+        <div class="mt-5">
+            <h2>Subscribe or Unsubscribe</h2>
+            <form id="subscribe-form">
+                <div class="form-group">
+                    <label for="subscribe-topic">Concert Updates:</label>
+                    <select class="form-control" id="subscribe-topic" required>
+                        <option value="SMTOWN">SMTOWN: "Korean Ballad"</option>
+                        <option value="YG Entertainment">YG Entertainment: "Girl Band"</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Subscribe/Unsubscribe</button>
+            </form>
+        </div>
+
+        <div class="mt-5">
+            <h2>Subscribed Concert Updates</h2>
+            <ul id="subscribed-topics" class="list-group">
+                <!-- Subscribed topics will be listed here -->
+            </ul>
+        </div>
+
+        <div class="mt-5">
+            <h2>Message and Schedule</h2>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Concert Agency</th>
+                        <th>Message</th>
+                        <th>Schedule</th>
+                    </tr>
+                </thead>
+                <tbody id="message-table">
+                    <!-- Messages will be listed here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        var socket = io();
+
+        socket.on('mqtt_message', function(data) {
+            // Split the message to separate message and schedule
+            const splitMessage = data.message.split(' jadwal:');
+            const message = splitMessage[0];
+            const schedule = splitMessage[1];
+
+            // Append to the table
+            $('#message-table').append(`
+                <tr>
+                    <td>${data.topic}</td>
+                    <td>${message}</td>
+                    <td>${schedule}</td>
+                </tr>
+            `);
+        });
+
+        function initClient() {
+            $.get("/init", function(data) {
+                if (data.status === "initialized") {
+                    alert("MQTT Client Initialized!");
+                }
+            });
+        }
+
+        $(document).ready(function() {
+            $('#subscribe-form').on('submit', function(event) {
+                event.preventDefault();
+                const topic = $('#subscribe-topic').val();
+                $.ajax({
+                    url: '/subscribe',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ topic }),
+                    success: function(response) {
+                        alert(`Subscribed to: ${response.subs}`);
+                        // Update subscribed topics list
+                        $('#subscribed-topics').empty();
+                        response.subs.forEach(function(topic) {
+                            $('#subscribed-topics').append(`<li class="list-group-item">${topic}</li>`);
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

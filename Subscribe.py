@@ -5,7 +5,7 @@ from paho.mqtt import client as mqtt_client
 #CONFIG
 broker = 'broker.emqx.io'
 port = 1883
-topic = "SMTOWN", "YG Entertaiment"
+topic = "SMTOWN", "YG Entertainment"
 client_id = ""
 username = 'konser'
 password = 'konser123'
@@ -30,10 +30,10 @@ def on_message(client, userdata, msg):
 def subscribe_menu(client):
     # Memilih untuk subscribe/unsubscribe topik
     SM = "SMTOWN"
-    YG = "YG Entertaiment"
-    print(f"sekarang sedang subscribe {subs}")
-    print(f"subscribe/unsubscribe : \n 1 {SM} \n 2 {YG}")
-    command = input()
+    YG = "YG Entertainment"
+    print(f"Anda Sedang Subscribe ke Channel {subs}")
+    print(f"\n 1 {SM} \n 2 {YG}")
+    command = input("Pilih Channel untuk Subscribe / Unsubscribe : ")
     if command == str(1):
         # Bagian untuk proses subscribe dan unsubscribe untuk SMTOWN
         if SM in subs:
@@ -52,13 +52,13 @@ def subscribe_menu(client):
             subs.append(YG)
             # Subscribe dengan parameter retain=True
             client.subscribe(YG, qos=0)
-    print(f"selamat bergabung di {subs}")
+    print(f"Selamat Datang di Channel {subs}")
     print()
     print()
 
 def run():
     global client_id
-    client_id = input("Nama : ")
+    client_id = input("Masukkan Nama : ")
 
     #Membuat Client
     client = mqtt_client.Client(client_id)

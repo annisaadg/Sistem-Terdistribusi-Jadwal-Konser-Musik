@@ -12,15 +12,6 @@ client_id = f'python-mqtt-{random.randint(0, 1000)}'
 username = 'konser'
 password = 'konser123'
 
-def save_schedule(agensi, pesan, jadwal):
-    data = {
-        "agensi": agensi,
-        "pesan": pesan,
-        "jadwal": jadwal.strftime("%Y/%m/%d - %H:%M")
-    }
-    with open(f'{agensi.lower()}_jadwal.json', 'w') as file:
-        json.dump(data, file)
-
 def connect_mqtt():
     def on_connect(client, userdata, flags, rc):
         if rc == 0:
@@ -46,7 +37,6 @@ def publish(client):
             pesan = input("pesan :")
             jadwal = datetime.datetime.strptime(
                 input('Jadwal acara YYYY/mm/dd - HH:MM  format: '), "%Y/%m/%d - %H:%M")
-            save_schedule(client.agensi, pesan, jadwal)
             msg = f"{pesan} jadwal:{jadwal}"
 
             # PUBLISH ke BROKER dengan retained=True
