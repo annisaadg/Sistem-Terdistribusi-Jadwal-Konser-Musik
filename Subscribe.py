@@ -1,22 +1,18 @@
-# Subscribe.py
 import random
+from paho.mqtt import client as mqtt_client
 from mqtt_common import connect_mqtt  # Import the reusable function
 
 class Subscribe:
-    def __init__(self, sm_publisher, yg_publisher):
+    def __init__(self, messages):
         self.client_id = f'python-mqtt-{random.randint(0, 1000)}'
         self.client = connect_mqtt(self.client_id, "Subscriber")
         self.subs = []
-        self.messages = []  # List to store received messages
-        self.sm_publisher = sm_publisher
-        self.yg_publisher = yg_publisher
-        self.sm_publisher.start()
-        self.yg_publisher.start()
+        self.messages = messages
 
     def on_message(self, client, userdata, msg):
         message = f"Received `{msg.payload.decode()}` from `{msg.topic}` topic"
         print(message)
-        self.messages.append(message)  # Store received message
+        self.messages.append(message)
 
     def subscribe(self, topic):
         if topic not in self.subs:

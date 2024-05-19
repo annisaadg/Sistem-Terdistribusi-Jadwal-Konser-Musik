@@ -1,6 +1,6 @@
 import random
-from mqtt_common import connect_mqtt
-from app import socketio  # Import Flask-SocketIO
+import datetime
+from mqtt_common import connect_mqtt  # Import the reusable function
 
 class SMPublisher:
     def __init__(self):
@@ -13,8 +13,6 @@ class SMPublisher:
         result = self.client.publish(self.topic, msg, retain=True)
         status = result[0]
         if status == 0:
-            # Emit message via WebSocket
-            socketio.emit('mqtt_message', msg, namespace='/mqtt')
             return f"Mengirim {msg} ke topik {self.topic}"
         else:
             return f"Gagal mengirim pesan ke topik {self.topic}"

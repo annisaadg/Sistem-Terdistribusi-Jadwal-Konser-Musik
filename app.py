@@ -1,20 +1,17 @@
+import threading
 import datetime
 from flask import Flask, request, render_template, redirect, url_for
-from flask_socketio import SocketIO
-from Subscribe import Subscribe
 from SMPublisher import SMPublisher
 from YGPublisher import YGPublisher
+from Subscribe import Subscribe
 
 app = Flask(__name__)
-socketio = SocketIO(app)  # Initialize Flask-SocketIO
+messages = []  # Global messages list to store received MQTT messages
 
-# Initialize MQTT Publishers
+# Initialize MQTT Clients
 sm_publisher = SMPublisher()
 yg_publisher = YGPublisher()
-
-# Initialize MQTT Subscriber
-subscriber = Subscribe(sm_publisher, yg_publisher)
-subscriber.start()
+subscriber = Subscribe(messages)
 
 @app.route('/')
 def index():
@@ -50,13 +47,22 @@ def subscribe():
         else:
             feedback = "Invalid action"
 
-        return render_template('subscribe.html', feedback=feedback, subs=subscriber.subs, topics=["SMTOWN", "YG Entertainment"], messages=subscriber.messages)
-    return render_template('subscribe.html', feedback='', subs=subscriber.subs, topics=["SMTOWN", "YG Entertainment"], messages=subscriber.messages)
+        return render_template('subscribe.html', feedback=feedback, subs=subscriber.subs, topics=["SMTOWN", "YG Entertainment"], messages=messages)
+    return render_template('subscribe.html', feedback='', subs=subscriber.subs, topics=["SMTOWN", "YG Entertainment"], messages=messages)
+
+@app.route('/setup')
+def setup():
+    sm_publisher.start()
+    yg_publisher.start()
+    subscriber.start()
+    return redirect(url_for('index'))
 
 @app.route('/shutdown')
 def shutdown():
+    sm_publisher.stop()
+    yg_publisher.stop()
     subscriber.stop()
     return redirect(url_for('index'))
 
 if __name__ == '__main__':
-    socketio.run(app, debug=True)
+    app.run(debug=True)

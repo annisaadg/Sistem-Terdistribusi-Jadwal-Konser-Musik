@@ -1,5 +1,5 @@
 import random
-from app import socketio
+import datetime
 from mqtt_common import connect_mqtt  # Import the reusable function
 
 class YGPublisher:
@@ -13,11 +13,9 @@ class YGPublisher:
         result = self.client.publish(self.topic, msg, retain=True)
         status = result[0]
         if status == 0:
-            message = f"Mengirim {msg} ke topik {self.topic}"
+            return f"Mengirim {msg} ke topik {self.topic}"
         else:
-            message = f"Gagal mengirim pesan ke topik {self.topic}"
-        socketio.emit('message_sent', {'message': message})
-        return message
+            return f"Gagal mengirim pesan ke topik {self.topic}"
 
     def start(self):
         self.client.loop_start()
