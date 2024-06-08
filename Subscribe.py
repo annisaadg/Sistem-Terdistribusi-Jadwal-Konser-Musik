@@ -1,92 +1,47 @@
 import random
-import time
+import datetime
 from paho.mqtt import client as mqtt_client
+from mqtt_common import connect_mqtt  # Import the reusable function
 
-# CONFIG
-broker = 'broker.emqx.io'
-port = 1883
-topic = "SMTOWN", "YG Entertaiment"
-client_id = ""
-username = 'konser'
-password = 'konser123'
-subs = []
-
-def connect_mqtt(client: mqtt_client):
-    # Connect subscriber ke broker
-    def on_connect(client, userdata, flags, rc):
-        if rc == 0:
-            print("Terhubung MQTT Broker!\n")
-        else:
-            print(f"Gagal Terhubung, {rc}\n")
-
-    client.username_pw_set(username, password)
-    client.on_connect = on_connect
-    client.connect(broker, port)
-
-def on_message(client, userdata, msg):
-    # Mendapatkan PESAN dari PUBLISHER
-    print(f"Received `{msg.payload.decode()}` from `{msg.topic}` topic")
-
-def subscribe_menu(client):
-    # Memilih untuk subscribe/unsubscribe topik
-    SM = "SMTOWN"
-    YG = "YG Entertaiment"
-    if not subs:
-        print("Anda tidak sedang berlangganan di topik apapun.")
-        print(f"Ketik salah satu nomor di bawah jika Anda ingin berlangganan: \n 1 {SM} \n 2 {YG}")
-        command = input("subscribe: ")
-    else:
-        print(f"Sekarang Anda sedang berlangganan: {', '.join(subs)}")
-        print(f"Subscribe/unsubscribe : \n 1 {SM} \n 2 {YG}")        
-        command = input("subscribe/unsubscribe: ")
+class Subscribe:
+    def __init__(self, messages):
+        self.client_id = f'python-mqtt-{random.randint(0, 1000)}'
+        self.client = connect_mqtt(self.client_id, "Subscriber")
+        self.subs = []
+        self.messages = messages
     
-    if command == str(1):
-        # Bagian untuk proses subscribe dan unsubscribe untuk SMTOWN
-        if SM in subs:
-            subs.pop(subs.index(SM))
-            client.unsubscribe(SM)
-            print("Anda berhasil melakukan unsubscribe pada SMTOWN")
+    def on_message(self, client, userdata, msg):
+        # Format the received message for better readability
+        payload = msg.payload.decode()
+        # Replace newline characters with <br> for HTML formatting
+        payload_formatted = payload.replace('\n', '<br>')
+        formatted_message = (
+            f"<strong>Topic:</strong> {msg.topic}<br>"
+            f"{payload_formatted}<br><br>"
+            f"<strong>Received at:</strong> {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+        )
+        print(f"Received `{payload}` from `{msg.topic}` topic")
+        self.messages.append(formatted_message)
+
+    def subscribe(self, topic):
+        if topic not in self.subs:
+            self.subs.append(topic)
+            self.client.subscribe(topic, qos=0)
+            return f"Subscribed to {topic}"
         else:
-            subs.append(SM)
-            client.subscribe(SM, qos=0)
-            print("Selamat bergabung di SMTOWN")
-    elif command == str(2):
-        # Bagian untuk proses subscribe dan unsubscribe untuk YG Entertainment
-        if YG in subs:
-            subs.pop(subs.index(YG))
-            client.unsubscribe(YG)
-            print("Anda berhasil melakukan unsubscribe pada YG Entertaiment")
+            return f"Already subscribed to {topic}"
+
+    def unsubscribe(self, topic):
+        if topic in self.subs:
+            self.subs.remove(topic)
+            self.client.unsubscribe(topic)
+            return f"Unsubscribed from {topic}"
         else:
-            subs.append(YG)
-            client.subscribe(YG, qos=0)
-            print("Selamat bergabung di YG Entertaiment")
+            return f"Not subscribed to {topic}"
 
-    print()  # Print a blank line for better readability
+    def start(self):
+        self.client.loop_start()
+        self.client.on_message = self.on_message
 
-def run():
-    global client_id
-    client_id = input("Nama : ")
-
-    # Membuat Client
-    client = mqtt_client.Client(client_id)
-
-    # Connect client ke broker
-    connect_mqtt(client)
-
-    # Start loop client
-    client.loop_start()
-    time.sleep(1)
-
-    subscribe_menu(client)
-
-    while True:
-        client.on_message = on_message    
-        inputs = input()
-        if inputs == "menu":
-            subscribe_menu(client)
-        time.sleep(1)
-
-    client.loop_stop()
-
-if __name__ == '__main__':
-    run()
+    def stop(self):
+        self.client.loop_stop()
