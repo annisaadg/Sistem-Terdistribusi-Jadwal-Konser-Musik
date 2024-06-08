@@ -1,4 +1,3 @@
-import threading
 import datetime
 from flask import Flask, request, render_template, redirect, url_for
 from SMPublisher import SMPublisher
@@ -6,16 +5,16 @@ from YGPublisher import YGPublisher
 from Subscribe import Subscribe
 
 app = Flask(__name__)
-messages = []  # Global messages list to store received MQTT messages
+messages = []  # Daftar pesan global untuk menyimpan pesan MQTT yang diterima
 
-# Initialize MQTT Clients
+# Inisialisasi Klien MQTT
 sm_publisher = SMPublisher()
 yg_publisher = YGPublisher()
 subscriber = Subscribe(messages)
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('index.html') # Menampilkan halaman indeks
 
 @app.route('/publish/<agency>', methods=['GET', 'POST'])
 def publish(agency):
@@ -72,28 +71,28 @@ def subscribe():
         topic = request.form['topic']
         
         if action == 'subscribe':
-            feedback = subscriber.subscribe(topic)
+            feedback = subscriber.subscribe(topic) # Berlangganan ke topik
         elif action == 'unsubscribe':
-            feedback = subscriber.unsubscribe(topic)
+            feedback = subscriber.unsubscribe(topic) # Membatalkan langganan dari topik
         else:
-            feedback = "Invalid action"
+            feedback = "Invalid action" # Menangani tindakan tidak valid
 
-        return render_template('subscribe.html', feedback=feedback, subs=subscriber.subs, topics=["SMTOWN", "YG Entertainment"], messages=messages)
-    return render_template('subscribe.html', feedback='', subs=subscriber.subs, topics=["SMTOWN", "YG Entertainment"], messages=messages)
+        return render_template('subscribe.html', feedback=feedback, subs=subscriber.subs, topics=["SMTOWN", "YG Entertainment"], messages=messages) # Menampilkan halaman subscribe dengan feedback
+    return render_template('subscribe.html', feedback='', subs=subscriber.subs, topics=["SMTOWN", "YG Entertainment"], messages=messages) # Menampilkan halaman subscribe
 
 @app.route('/setup')
 def setup():
-    sm_publisher.start()
-    yg_publisher.start()
-    subscriber.start()
-    return redirect(url_for('index'))
+    sm_publisher.start() # Memulai loop klien SMPublisher
+    yg_publisher.start() # Memulai loop klien YGPublisher
+    subscriber.start() # Memulai loop klien Subscribe
+    return redirect(url_for('index'))# Mengarahkan ke halaman indeks
 
 @app.route('/shutdown')
 def shutdown():
-    sm_publisher.stop()
-    yg_publisher.stop()
-    subscriber.stop()
-    return redirect(url_for('index'))
+    sm_publisher.stop() # Menghentikan loop klien SMPublisher
+    yg_publisher.stop() # Menghentikan loop klien YGPublisher
+    subscriber.stop() # Menghentikan loop klien Subscribe
+    return redirect(url_for('index')) # Mengarahkan ke halaman indeks
 
 if __name__ == '__main__':
     app.run(debug=True)
