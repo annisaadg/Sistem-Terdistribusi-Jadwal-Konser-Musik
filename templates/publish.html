@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Publish to MQTT</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h1 class="mt-5">Publish a Message to {{ agency }}</h1>
+        <form method="post" class="mt-4">
+            <div class="form-group">
+                <label for="message">Message:</label>
+                <input type="text" class="form-control" id="message" name="message" required>
+            </div>
+            <div class="form-group">
+                <label for="schedule">Schedule (YYYY/mm/dd - HH:MM):</label>
+                <input type="text" class="form-control" id="schedule" name="schedule" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Publish</button>
+        </form>
+        <p class="mt-3">{{ feedback }}</p>
+        <a href="/" class="btn btn-secondary mt-3">Back to Home</a>
+    </div>
+</body>
+</html>

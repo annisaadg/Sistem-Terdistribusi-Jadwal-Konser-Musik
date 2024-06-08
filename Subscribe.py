@@ -1,92 +1,40 @@
 import random
-import time
 from paho.mqtt import client as mqtt_client
+from mqtt_common import connect_mqtt  # Import the reusable function
 
-# CONFIG
-broker = 'broker.emqx.io'
-port = 1883
-topic = "SMTOWN", "YG Entertaiment"
-client_id = ""
-username = 'konser'
-password = 'konser123'
-subs = []
+# Kelas untuk berlangganan topik dan menangani pesan yang diterima
+class Subscribe:
+    def __init__(self, messages):
+        self.client_id = f'python-mqtt-{random.randint(0, 1000)}' # Menghasilkan ID klien acak
+        self.client = connect_mqtt(self.client_id, "Subscriber") # Menghubungkan ke broker MQTT dengan ID klien dan nama subscriber
+        self.subs = [] # Daftar untuk melacak topik yang dilanggan
+        self.messages = messages # Referensi ke daftar pesan global
 
-def connect_mqtt(client: mqtt_client):
-    # Connect subscriber ke broker
-    def on_connect(client, userdata, flags, rc):
-        if rc == 0:
-            print("Terhubung MQTT Broker!\n")
+    def on_message(self, client, userdata, msg):
+        message = f"Received `{msg.payload.decode()}` from `{msg.topic}` topic" # Memformat pesan yang diterima
+        print(message)
+        self.messages.append(message) # Menambahkan pesan yang diterima ke daftar pesan global
+
+    def subscribe(self, topic):
+        if topic not in self.subs:
+            self.subs.append(topic) # Menambahkan topik ke daftar langganan jika belum dilanggan
+            self.client.subscribe(topic, qos=0) # Berlangganan ke topik
+            return f"Subscribed to {topic}" # Mengembalikan pesan sukses
         else:
-            print(f"Gagal Terhubung, {rc}\n")
+            return f"Already subscribed to {topic}" # Mengembalikan pesan sudah berlangganan
 
-    client.username_pw_set(username, password)
-    client.on_connect = on_connect
-    client.connect(broker, port)
-
-def on_message(client, userdata, msg):
-    # Mendapatkan PESAN dari PUBLISHER
-    print(f"Received `{msg.payload.decode()}` from `{msg.topic}` topic")
-
-def subscribe_menu(client):
-    # Memilih untuk subscribe/unsubscribe topik
-    SM = "SMTOWN"
-    YG = "YG Entertaiment"
-    if not subs:
-        print("Anda tidak sedang berlangganan di topik apapun.")
-        print(f"Ketik salah satu nomor di bawah jika Anda ingin berlangganan: \n 1 {SM} \n 2 {YG}")
-        command = input("subscribe: ")
-    else:
-        print(f"Sekarang Anda sedang berlangganan: {', '.join(subs)}")
-        print(f"Subscribe/unsubscribe : \n 1 {SM} \n 2 {YG}")        
-        command = input("subscribe/unsubscribe: ")
-    
-    if command == str(1):
-        # Bagian untuk proses subscribe dan unsubscribe untuk SMTOWN
-        if SM in subs:
-            subs.pop(subs.index(SM))
-            client.unsubscribe(SM)
-            print("Anda berhasil melakukan unsubscribe pada SMTOWN")
+    def unsubscribe(self, topic):
+        if topic in self.subs:
+            self.subs.remove(topic) # Menghapus topik dari daftar langganan jika dilanggan
+            self.client.unsubscribe(topic) # Membatalkan langganan dari topik
+            return f"Unsubscribed from {topic}" # Mengembalikan pesan sukses
         else:
-            subs.append(SM)
-            client.subscribe(SM, qos=0)
-            print("Selamat bergabung di SMTOWN")
-    elif command == str(2):
-        # Bagian untuk proses subscribe dan unsubscribe untuk YG Entertainment
-        if YG in subs:
-            subs.pop(subs.index(YG))
-            client.unsubscribe(YG)
-            print("Anda berhasil melakukan unsubscribe pada YG Entertaiment")
-        else:
-            subs.append(YG)
-            client.subscribe(YG, qos=0)
-            print("Selamat bergabung di YG Entertaiment")
+            return f"Not subscribed to {topic}" # Mengembalikan pesan belum berlangganan
 
-    print()  # Print a blank line for better readability
+    def start(self):
+        self.client.loop_start() # Memulai loop klien MQTT
+        self.client.on_message = self.on_message # Menetapkan callback on_message
 
-def run():
-    global client_id
-    client_id = input("Nama : ")
+    def stop(self):
+        self.client.loop_stop() # Menghentikan loop klien MQTT
 
-    # Membuat Client
-    client = mqtt_client.Client(client_id)
-
-    # Connect client ke broker
-    connect_mqtt(client)
-
-    # Start loop client
-    client.loop_start()
-    time.sleep(1)
-
-    subscribe_menu(client)
-
-    while True:
-        client.on_message = on_message    
-        inputs = input()
-        if inputs == "menu":
-            subscribe_menu(client)
-        time.sleep(1)
-
-    client.loop_stop()
-
-if __name__ == '__main__':
-    run()
