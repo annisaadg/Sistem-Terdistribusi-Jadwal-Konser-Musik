@@ -8,8 +8,8 @@ class SMPublisher:
         self.client_id = f'python-mqtt-{random.randint(0, 1000)}'
         self.client = connect_mqtt(self.client_id, "SMTOWN")
 
-    def publish(self, pesan, jadwal):
-        msg = f"{pesan} jadwal:{jadwal}"
+    def publish(self, pesan):
+        msg = f"{pesan}"
         result = self.client.publish(self.topic, msg, retain=True)
         status = result[0]
         if status == 0:

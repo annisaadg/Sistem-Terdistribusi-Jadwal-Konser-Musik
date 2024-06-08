@@ -38,7 +38,7 @@
         <p class="mt-3">Refresh to Load Newest Message & Schedule</p>
         <ul class="list-group">
             {% for message in messages %}
-                <li class="list-group-item">{{ message }}</li>
+                <li class="list-group-item">{% autoescape false %}{{ message }}{% endautoescape %}</li>
             {% endfor %}
         </ul>
         <a href="/" class="btn btn-secondary mt-3">Back to Home</a>

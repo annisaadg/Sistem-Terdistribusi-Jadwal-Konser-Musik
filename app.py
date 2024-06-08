@@ -20,19 +20,50 @@ def index():
 @app.route('/publish/<agency>', methods=['GET', 'POST'])
 def publish(agency):
     if request.method == 'POST':
-        pesan = request.form['message']
-        jadwal = request.form['schedule']
-        jadwal_dt = datetime.datetime.strptime(jadwal, "%Y/%m/%d - %H:%M")
-        
+        # Data Informasi Konser
+        pesan = request.form['pesan']
+        tanggal = request.form['tanggal']
+        waktu = request.form['waktu']
+        nama_konser = request.form['nama_konser']
+        lokasi = request.form['lokasi']
+        harga_tiket = request.form['harga_tiket']
+        tema_konser = request.form['tema_konser']
+
+        #Data Informasi Artis
+        artists = request.form.getlist('artists')
+
+        # Format the artists list as HTML list
+        artists_list_html = "<ul>"
+        for artist in artists:
+            artists_list_html += f"<li>{artist}</li>"
+        artists_list_html += "</ul>"
+
+        # Format the ticket price as Rupiah
+        harga_tiket_won = f"{int(harga_tiket):,} KRW".replace(",", ".")
+
+        # Create the full message with all details
+        full_message = (
+            f"\n{pesan}\n"
+            f"Date: {tanggal}\n"
+            f"Time: {waktu}\n"
+            f"Concert Name: {nama_konser}\n"
+            f"Location: {lokasi}\n"
+            f"Ticket Price: {harga_tiket_won}\n"
+            f"Tema: {tema_konser}\n"
+            f"Artists:\n{artists_list_html}"
+        )
+
         if agency == 'SMTOWN':
-            feedback = sm_publisher.publish(pesan, jadwal_dt)
+            feedback = sm_publisher.publish(full_message)
         elif agency == 'YG':
-            feedback = yg_publisher.publish(pesan, jadwal_dt)
+            feedback = yg_publisher.publish(full_message)
         else:
             feedback = "Invalid agency"
-        
+
         return render_template('publish.html', feedback=feedback, agency=agency)
+    
     return render_template('publish.html', feedback='', agency=agency)
+
 
 @app.route('/subscribe', methods=['GET', 'POST'])
 def subscribe():

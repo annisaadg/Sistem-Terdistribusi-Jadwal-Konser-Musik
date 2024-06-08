@@ -1,4 +1,5 @@
 import random
+import datetime
 from paho.mqtt import client as mqtt_client
 from mqtt_common import connect_mqtt  # Import the reusable function
 
@@ -8,11 +9,19 @@ class Subscribe:
         self.client = connect_mqtt(self.client_id, "Subscriber")
         self.subs = []
         self.messages = messages
-
+    
     def on_message(self, client, userdata, msg):
-        message = f"Received `{msg.payload.decode()}` from `{msg.topic}` topic"
-        print(message)
-        self.messages.append(message)
+        # Format the received message for better readability
+        payload = msg.payload.decode()
+        # Replace newline characters with <br> for HTML formatting
+        payload_formatted = payload.replace('\n', '<br>')
+        formatted_message = (
+            f"<strong>Topic:</strong> {msg.topic}<br>"
+            f"{payload_formatted}<br><br>"
+            f"<strong>Received at:</strong> {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+        )
+        print(f"Received `{payload}` from `{msg.topic}` topic")
+        self.messages.append(formatted_message)
 
     def subscribe(self, topic):
         if topic not in self.subs:
